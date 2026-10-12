@@ -1,0 +1,68 @@
+{% extends "admin/base.html" %}
+{% set active_admin = 'posts' %}
+{% block admin_actions %}
+  <a class="btn" href="{{ url_for('admin.new_post') }}">New post</a>
+{% endblock %}
+
+{% block admin_content %}
+<nav class="filter-tabs" aria-label="Filter by status">
+  <a href="{{ url_for('admin.posts') }}" {% if not status %}aria-current="page"{% endif %}>All</a>
+  <a href="{{ url_for('admin.posts', status='published') }}" {% if status == 'published' %}aria-current="page"{% endif %}>Published</a>
+  <a href="{{ url_for('admin.posts', status='draft') }}" {% if status == 'draft' %}aria-current="page"{% endif %}>Drafts</a>
+</nav>
+
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Status</th>
+      <th class="num">Views</th>
+      <th>Updated</th>
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for post in posts %}
+      <tr>
+        <td>
+          <a class="strong" href="{{ url_for('admin.edit_post', post_id=post.id) }}">{{ post.title }}</a>
+          {% if post.is_featured %}<span class="badge badge-featured">featured</span>{% endif %}
+        </td>
+        <td><span class="badge badge-{{ post.status }}">{{ post.status }}</span></td>
+        <td class="num">{{ post.view_count }}</td>
+        <td class="muted small">{{ (post.updated_at or post.created_at)[:10] }}</td>
+        <td class="actions-col">
+          <div class="row-actions">
+            <a class="link" href="{{ url_for('admin.preview_post', post_id=post.id) }}">Preview</a>
+            {% if post.status == 'published' %}
+              <a class="link" href="{{ url_for('blog.post_detail', slug=post.slug) }}">View</a>
+              <form method="post" action="{{ url_for('admin.change_status', post_id=post.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="status" value="draft">
+                <button class="link" type="submit">Unpublish</button>
+              </form>
+            {% else %}
+              <form method="post" action="{{ url_for('admin.change_status', post_id=post.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="status" value="published">
+                <button class="link" type="submit">Publish</button>
+              </form>
+            {% endif %}
+            {% if g.user and g.user.is_admin %}
+              <form method="post" action="{{ url_for('admin.remove_post', post_id=post.id) }}"
+                    data-confirm="Delete this post permanently?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="link danger" type="submit">Delete</button>
+              </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="muted">No posts found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% include "partials/pagination.html" %}
+{% endblock %}

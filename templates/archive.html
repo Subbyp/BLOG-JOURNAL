@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-header">
+  <h1>Archive</h1>
+  <p class="muted">Everything published, by month.</p>
+</header>
+
+{% if buckets %}
+  <ol class="archive-list">
+    {% for bucket in buckets %}
+      <li>
+        <a href="{{ url_for('blog.archive_period', year=bucket.year, month=bucket.month[5:7]) }}">
+          <span class="archive-month">{{ months[bucket.month[5:7]] }} {{ bucket.year }}</span>
+          <span class="archive-count">{{ bucket.total }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ol>
+{% else %}
+  <p class="muted">Nothing published yet.</p>
+{% endif %}
+{% endblock %}

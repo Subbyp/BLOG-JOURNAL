@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-header">
+  <h1>Tags</h1>
+  <p class="muted">Browse writing by topic.</p>
+</header>
+
+{% if tags %}
+  <div class="tag-cloud">
+    {% for tag in tags %}
+      <a class="tag-pill tag-pill-lg" href="{{ url_for('blog.tag_detail', slug=tag.slug) }}">
+        {{ tag.name }} <span class="count">{{ tag.post_count }}</span>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="muted">No tags yet.</p>
+{% endif %}
+{% endblock %}

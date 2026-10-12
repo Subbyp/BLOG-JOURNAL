@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block main_class %}wrap admin-wrap{% endblock %}
+{% block body_class %}admin{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+  <aside class="admin-sidebar" aria-label="Admin navigation">
+    <nav>
+      <a href="{{ url_for('admin.dashboard') }}" {% if active_admin == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+      <a href="{{ url_for('admin.posts') }}" {% if active_admin == 'posts' %}aria-current="page"{% endif %}>Posts</a>
+      <a href="{{ url_for('admin.new_post') }}" {% if active_admin == 'new' %}aria-current="page"{% endif %}>New post</a>
+      {% if g.user and g.user.is_admin %}
+        <a href="{{ url_for('admin.comments') }}" {% if active_admin == 'comments' %}aria-current="page"{% endif %}>Comments</a>
+      {% endif %}
+      <a href="{{ url_for('admin.media') }}" {% if active_admin == 'media' %}aria-current="page"{% endif %}>Media</a>
+      {% if g.user and g.user.is_admin %}
+        <a href="{{ url_for('admin.settings') }}" {% if active_admin == 'settings' %}aria-current="page"{% endif %}>Settings</a>
+        <a href="{{ url_for('admin.users') }}" {% if active_admin == 'users' %}aria-current="page"{% endif %}>Users</a>
+      {% endif %}
+      <a href="{{ url_for('admin.profile') }}" {% if active_admin == 'profile' %}aria-current="page"{% endif %}>Profile</a>
+    </nav>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-head">
+      <h1>{{ page_title or 'Admin' }}</h1>
+      {% block admin_actions %}{% endblock %}
+    </header>
+    {% block admin_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

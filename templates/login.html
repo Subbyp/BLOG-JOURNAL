@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-card">
+  <h1>Sign in</h1>
+  <p class="muted">Administrators only.</p>
+  <form method="post" action="{{ url_for('auth.login') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next or '' }}">
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <label class="checkbox">
+      <input type="checkbox" name="remember" value="1">
+      <span>Keep me signed in</span>
+    </label>
+    <button class="btn btn-block" type="submit">Sign in</button>
+  </form>
+</div>
+{% endblock %}

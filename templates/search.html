@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-header">
+  <h1>Search</h1>
+  <form class="search-page" action="{{ url_for('blog.search') }}" method="get" role="search">
+    <label class="sr-only" for="q">Search posts</label>
+    <input id="q" type="search" name="q" value="{{ term }}" placeholder="Search posts…" autofocus>
+    <button class="btn" type="submit">Search</button>
+  </form>
+</header>
+
+{% if term %}
+  <p class="muted search-summary">
+    {% if pagination and pagination.total %}
+      {{ pagination.total }} result{{ '' if pagination.total == 1 else 's' }} for “{{ term }}”
+    {% else %}
+      No results for “{{ term }}”
+    {% endif %}
+  </p>
+
+  <section class="post-list" aria-label="Search results">
+    {% for post in posts %}
+      {% include "partials/post_card.html" %}
+    {% endfor %}
+  </section>
+
+  {% include "partials/pagination.html" %}
+{% else %}
+  <p class="muted">Type a word or phrase to search the archive.</p>
+{% endif %}
+{% endblock %}

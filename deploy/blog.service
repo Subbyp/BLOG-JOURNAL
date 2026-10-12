@@ -1,0 +1,18 @@
+[Unit]
+Description=The Journal Gunicorn service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/home/subby/blog
+EnvironmentFile=/etc/the-journal/.env
+ExecStart=/home/subby/blog/.venv/bin/gunicorn --config /home/subby/blog/gunicorn.conf.py app:app
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

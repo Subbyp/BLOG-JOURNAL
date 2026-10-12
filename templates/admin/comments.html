@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+{% set active_admin = 'comments' %}
+{% block admin_content %}
+{% if g.user and g.user.is_admin %}
+<nav class="filter-tabs" aria-label="Filter comments">
+  <a href="{{ url_for('admin.comments') }}" {% if not status %}aria-current="page"{% endif %}>All ({{ counts.all }})</a>
+  <a href="{{ url_for('admin.comments', status='pending') }}" {% if status == 'pending' %}aria-current="page"{% endif %}>Pending ({{ counts.pending }})</a>
+  <a href="{{ url_for('admin.comments', status='approved') }}" {% if status == 'approved' %}aria-current="page"{% endif %}>Approved ({{ counts.approved }})</a>
+  <a href="{{ url_for('admin.comments', status='spam') }}" {% if status == 'spam' %}aria-current="page"{% endif %}>Spam ({{ counts.spam }})</a>
+</nav>
+
+<ul class="comment-mod-list">
+  {% for comment in comments %}
+    <li class="comment-mod" data-comment="{{ comment.id }}">
+      <div class="comment-mod-head">
+        <div>
+          <strong>{{ comment.author_name }}</strong>
+          <span class="muted small">{{ comment.author_email }}</span>
+        </div>
+        <span class="badge badge-{{ comment.status }}">{{ comment.status }}</span>
+      </div>
+      <p class="comment-mod-post muted small">
+        on <a href="{{ url_for('blog.post_detail', slug=comment.post_slug) }}#comment-{{ comment.id }}">{{ comment.post_title }}</a>
+        · {{ comment.created_at }}
+      </p>
+      <p class="comment-mod-body">{{ comment.body }}</p>
+      <div class="row-actions">
+        {% for target in ['approved', 'pending', 'spam'] %}
+          {% if comment.status != target %}
+            <form method="post" action="{{ url_for('admin.comment_status', comment_id=comment.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="status" value="{{ target }}">
+              <button class="link" type="submit">Mark {{ target }}</button>
+            </form>
+          {% endif %}
+        {% endfor %}
+        <form method="post" action="{{ url_for('admin.comment_delete', comment_id=comment.id) }}"
+              data-confirm="Delete this comment?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="link danger" type="submit">Delete</button>
+        </form>
+      </div>
+    </li>
+  {% else %}
+    <li class="muted">No comments.</li>
+  {% endfor %}
+</ul>
+
+{% include "partials/pagination.html" %}
+{% endif %}
+{% endblock %}

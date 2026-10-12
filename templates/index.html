@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if featured %}
+<article class="featured">
+  <div class="featured-body">
+    <span class="eyebrow">Featured</span>
+    <h1 class="featured-title">
+      <a href="{{ url_for('blog.post_detail', slug=featured.slug) }}">{{ featured.title }}</a>
+    </h1>
+    <p class="featured-excerpt">{{ featured.excerpt }}</p>
+    <div class="post-meta">
+      <time datetime="{{ featured.published_at }}">{{ featured.published_at[:10] }}</time>
+      <span class="dot">·</span>
+      <span>{{ featured.reading_time }} min read</span>
+      {% if featured.tags %}<span class="dot">·</span>{% endif %}
+      {% for tag in featured.tags[:2] %}
+        <a class="tag-inline" href="{{ url_for('blog.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a>{% if not loop.last %}, {% endif %}
+      {% endfor %}
+    </div>
+    <a class="btn" href="{{ url_for('blog.post_detail', slug=featured.slug) }}">Read the piece</a>
+  </div>
+  {% if featured.cover_image %}
+    <a class="featured-media" href="{{ url_for('blog.post_detail', slug=featured.slug) }}" tabindex="-1" aria-hidden="true">
+      <img src="{{ url_for('blog.media_file', filename=featured.cover_image) }}" alt="" loading="lazy">
+    </a>
+  {% endif %}
+</article>
+{% endif %}
+
+<section class="post-list" aria-label="Latest posts">
+  {% for post in posts %}
+    {% include "partials/post_card.html" %}
+  {% else %}
+    {% if not featured %}
+      <div class="empty-state">
+        <h2>No posts yet</h2>
+        <p class="muted">{% if g.user %}Create your first post from the dashboard.{% else %}Check back soon.{% endif %}</p>
+        {% if g.user %}<a class="btn" href="{{ url_for('admin.new_post') }}">Write a post</a>{% endif %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</section>
+
+{% include "partials/pagination.html" %}
+{% endblock %}

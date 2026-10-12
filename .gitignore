@@ -1,0 +1,24 @@
+# Ignore the database, uploaded media, and local environments
+instance/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Editors and OS noise
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Secrets
+.env
+.env.local

@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+{% set active_admin = 'media' %}
+{% block admin_content %}
+<section class="panel">
+  <header class="panel-head"><h2>Upload</h2></header>
+  <form class="upload-form" method="post" action="{{ url_for('admin.media_upload') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="image">Image file</label>
+      <input id="image" name="image" type="file" accept="image/*" required>
+    </div>
+    <div class="field">
+      <label for="alt_text">Alt text</label>
+      <input id="alt_text" name="alt_text" type="text" maxlength="200" placeholder="Describe the image">
+    </div>
+    <button class="btn" type="submit">Upload</button>
+    <p class="muted small">Max {{ (config.MAX_CONTENT_LENGTH // 1024 // 1024) }} MB. Large images are downscaled automatically.</p>
+  </form>
+</section>
+
+{% if media %}
+  <div class="media-grid">
+    {% for item in media %}
+      <figure class="media-card">
+        <img src="{{ url_for('blog.media_file', filename=item.filename) }}" alt="{{ item.alt_text }}" loading="lazy">
+        <figcaption>
+          <form method="post" action="{{ url_for('admin.media_alt', media_id=item.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input name="alt_text" type="text" value="{{ item.alt_text }}" placeholder="Alt text" maxlength="200">
+            <button class="link" type="submit">Save alt</button>
+          </form>
+          <div class="row-actions">
+            <button class="link" type="button" data-copy="{{ url_for('blog.media_file', filename=item.filename) }}">Copy URL</button>
+            {% if g.user and g.user.is_admin %}
+              <form method="post" action="{{ url_for('admin.media_delete', media_id=item.id) }}"
+                    data-confirm="Delete this image?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="link danger" type="submit">Delete</button>
+              </form>
+            {% endif %}
+          </div>
+          <p class="muted small">{{ item.original_name }} · {{ (item.size_bytes / 1024)|round(0, 'floor')|int }} KB</p>
+        </figcaption>
+      </figure>
+    {% endfor %}
+  </div>
+  {% include "partials/pagination.html" %}
+{% else %}
+  <p class="muted">No media uploaded yet.</p>
+{% endif %}
+{% endblock %}

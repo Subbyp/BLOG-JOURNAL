@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+{% set active_admin = 'settings' %}
+{% block admin_content %}
+<form class="panel settings-form" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="field">
+    <label for="site_title">Site title</label>
+    <input id="site_title" name="site_title" type="text" value="{{ settings.site_title }}" maxlength="120">
+  </div>
+  <div class="field">
+    <label for="site_tagline">Tagline</label>
+    <input id="site_tagline" name="site_tagline" type="text" value="{{ settings.site_tagline }}" maxlength="200">
+  </div>
+  <div class="field">
+    <label for="site_description">Description <span class="muted">(used in meta tags and the About page)</span></label>
+    <textarea id="site_description" name="site_description" rows="3" maxlength="500">{{ settings.site_description }}</textarea>
+  </div>
+  <div class="field">
+    <label for="site_author">Author name</label>
+    <input id="site_author" name="site_author" type="text" value="{{ settings.site_author }}" maxlength="120">
+  </div>
+  <div class="field">
+    <label for="posts_per_page">Posts per page</label>
+    <input id="posts_per_page" name="posts_per_page" type="number" min="1" max="50" value="{{ settings.posts_per_page }}">
+  </div>
+  <div class="field">
+    <label for="footer_text">Footer text</label>
+    <input id="footer_text" name="footer_text" type="text" value="{{ settings.footer_text }}" maxlength="200">
+  </div>
+  <label class="checkbox">
+    <input type="checkbox" name="comments_enabled" value="1" {% if settings.comments_enabled == '1' %}checked{% endif %}>
+    <span>Enable comments site-wide</span>
+  </label>
+  <button class="btn" type="submit">Save settings</button>
+</form>
+{% endblock %}

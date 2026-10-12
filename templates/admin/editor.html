@@ -1,0 +1,127 @@
+{% extends "admin/base.html" %}
+{% set active_admin = 'posts' %}
+{% block admin_actions %}
+  {% if mode == 'edit' %}
+    <a class="btn btn-ghost" href="{{ url_for('admin.preview_post', post_id=post.id) }}" target="_blank" rel="noopener">Preview</a>
+  {% endif %}
+{% endblock %}
+
+{% block admin_content %}
+<form class="editor" method="post" data-editor>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="editor-main">
+    <div class="field">
+      <label for="title">Title</label>
+      <input id="title" name="title" type="text" required maxlength="200"
+             value="{{ post.title if post else '' }}" placeholder="A clear, specific headline">
+    </div>
+
+    <div class="editor-panes">
+      <div class="pane">
+        <div class="pane-head">
+          <span>Markdown</span>
+          <div class="pane-tools">
+            <button class="link" type="button" data-md-insert="**|**" title="Bold">B</button>
+            <button class="link" type="button" data-md-insert="*|*" title="Italic"><em>I</em></button>
+            <button class="link" type="button" data-md-insert="[|](https://)" title="Link">Link</button>
+            <button class="link" type="button" data-md-insert="## |" title="Heading">H2</button>
+            <button class="link" type="button" data-md-insert="- |" title="List">List</button>
+            <button class="link" type="button" data-md-insert="> |" title="Quote">Quote</button>
+            <button class="link" type="button" data-md-insert="```\n|\n```" title="Code">Code</button>
+            <button class="link" type="button" data-md-upload title="Insert image">Image</button>
+          </div>
+        </div>
+        <textarea id="content" name="content" rows="24" spellcheck="true"
+                  placeholder="Write in Markdown…">{{ post.content if post else '' }}</textarea>
+        <input type="file" accept="image/*" data-image-input hidden>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head"><span>Preview</span></div>
+        <div class="preview prose" data-preview aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="editor-side">
+    <div class="panel">
+      <header class="panel-head"><h2>Publish</h2></header>
+      <label class="checkbox">
+        <input type="checkbox" name="publish" value="1" {% if post and post.status == 'published' %}checked{% endif %}>
+        <span>Published</span>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" name="is_featured" value="1" {% if post and post.is_featured %}checked{% endif %}>
+        <span>Featured on home</span>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" name="allow_comments" value="1" {% if not post or post.allow_comments %}checked{% endif %}>
+        <span>Allow comments</span>
+      </label>
+
+      <div class="field">
+        <label for="published_at">Publish date</label>
+        <input id="published_at" name="published_at" type="datetime-local"
+               value="{{ (post.published_at or '')[:16].replace(' ', 'T') if post else '' }}">
+      </div>
+
+      <div class="btn-stack">
+        <button class="btn btn-block" type="submit" name="continue" value="0">Save</button>
+        <button class="btn btn-ghost btn-block" type="submit" name="continue" value="1">Save &amp; continue</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <header class="panel-head"><h2>Meta</h2></header>
+      <div class="field">
+        <label for="slug">Slug</label>
+        <input id="slug" name="slug" type="text" value="{{ post.slug if post else '' }}"
+               placeholder="auto-generated" pattern="[a-z0-9-]*">
+      </div>
+      <div class="field">
+        <label for="tags">Tags <span class="muted">(comma separated)</span></label>
+        <input id="tags" name="tags" type="text" value="{{ tags|join(', ') }}"
+               placeholder="engineering, web">
+      </div>
+      <div class="field">
+        <label for="excerpt">Excerpt</label>
+        <textarea id="excerpt" name="excerpt" rows="3" maxlength="300"
+                  placeholder="Short summary for cards and meta descriptions">{{ post.excerpt if post and post.excerpt and mode == 'edit' else '' }}</textarea>
+        {% if mode == 'edit' %}
+          <button class="link" type="button" data-generate-excerpt
+                  data-url="{{ url_for('admin.generate_excerpt', post_id=post.id) }}">Auto-generate from content</button>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="panel">
+      <header class="panel-head"><h2>Cover image</h2></header>
+      <div class="field">
+        <label for="cover_image">Filename</label>
+        <input id="cover_image" name="cover_image" type="text"
+               value="{{ post.cover_image if post and post.cover_image else '' }}"
+               placeholder="upload to get a filename">
+      </div>
+      <label class="btn btn-ghost btn-sm" for="cover-upload">Upload cover</label>
+      <input id="cover-upload" type="file" accept="image/*" hidden data-cover-input>
+      {% if post and post.cover_image %}
+        <img class="cover-preview" src="{{ url_for('blog.media_file', filename=post.cover_image) }}" alt="">
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <header class="panel-head"><h2>Stats</h2></header>
+      <p class="muted small">
+        {{ reading_time or (post.content|reading_time if post else 1) }} min read ·
+        {{ post.word_count if post else 0 }} words
+        {% if post and post.view_count is defined %}· {{ post.view_count }} views{% endif %}
+      </p>
+    </div>
+  </aside>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+{% endblock %}
