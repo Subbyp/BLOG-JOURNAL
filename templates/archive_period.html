@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-header">
+  <p class="eyebrow">Archive</p>
+  <h1>{{ label }}</h1>
+  <p class="muted">{{ posts|length }} post{{ '' if posts|length == 1 else 's' }}</p>
+</header>
+
+<section class="post-list" aria-label="Posts from {{ label }}">
+  {% for post in posts %}
+    {% include "partials/post_card.html" %}
+  {% else %}
+    <p class="muted">No posts in this period.</p>
+  {% endfor %}
+</section>
+
+<p><a class="back-link" href="{{ url_for('blog.archive_index') }}">← Full archive</a></p>
+{% endblock %}

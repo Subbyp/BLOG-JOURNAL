@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block head %}
+{% if post.cover_image %}
+<meta property="og:image" content="{{ request.url_root.rstrip('/') }}{{ url_for('blog.media_file', filename=post.cover_image) }}">
+{% endif %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ post.title|tojson }},
+  "description": {{ post.excerpt|tojson }},
+  "datePublished": {{ (post.published_at or post.created_at)|tojson }},
+  "dateModified": {{ (post.updated_at or post.published_at or post.created_at)|tojson }},
+  "wordCount": {{ post.word_count or 0 }},
+  "author": {"@type": "Person", "name": {{ (site.site_author or site.site_title)|tojson }}}
+  {% if post.cover_image %}, "image": {{ (request.url_root.rstrip('/') ~ url_for('blog.media_file', filename=post.cover_image))|tojson }}{% endif %}
+}
+</script>
+{% endblock %}
+
+{% block body_class %}post-page{% endblock %}
+
+{% block content %}
+{% if is_preview %}
+  <div class="preview-banner">
+    Preview of an unpublished draft. This page is private and not indexed.
+    {% if g.user %}<a href="{{ url_for('admin.edit_post', post_id=post.id) }}">Edit</a>{% endif %}
+  </div>
+{% endif %}
+
+<article class="article" itemscope itemtype="https://schema.org/BlogPosting">
+  <header class="article-header">
+    <div class="article-header-inner">
+      {% if post.tags %}
+        <div class="eyebrow-row">
+          {% for tag in post.tags %}
+            <a class="tag-pill" href="{{ url_for('blog.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <h1 class="article-title" itemprop="headline">{{ post.title }}</h1>
+      {% if post.excerpt %}<p class="article-lede">{{ post.excerpt }}</p>{% endif %}
+      <div class="post-meta article-meta">
+        <time datetime="{{ post.published_at or post.created_at }}" itemprop="datePublished">
+          {{ (post.published_at or post.created_at)[:10] }}
+        </time>
+        <span class="dot">·</span>
+        <span>{{ post.reading_time }} min read</span>
+        <span class="dot">·</span>
+        <span>{{ post.word_count or 0 }} words</span>
+        {% if post.view_count %}<span class="dot">·</span><span>{{ post.view_count }} views</span>{% endif %}
+      </div>
+      {% if g.user and not is_preview %}
+        <div class="article-admin">
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.edit_post', post_id=post.id) }}">Edit</a>
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.preview_post', post_id=post.id) }}">Preview link</a>
+        </div>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if post.cover_image %}
+    <figure class="article-cover">
+      <img src="{{ url_for('blog.media_file', filename=post.cover_image) }}" alt="">
+    </figure>
+  {% endif %}
+
+  <div class="article-layout">
+    <div class="prose" itemprop="articleBody">
+      {{ content_html }}
+    </div>
+
+    {% if toc|length >= 2 %}
+      <aside class="toc" aria-label="Table of contents">
+        <p class="toc-title">On this page</p>
+        <ul>
+          {% for item in toc %}
+            <li>
+              <a href="#{{ item.anchor }}">{{ item.text }}</a>
+              {% if item.children %}
+                <ul>
+                  {% for child in item.children %}
+                    <li><a href="#{{ child.anchor }}">{{ child.text }}</a></li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </aside>
+    {% endif %}
+  </div>
+
+  {% if related %}
+    <section class="related">
+      <h2 class="section-title">Related reading</h2>
+      <div class="related-grid">
+        {% for item in related %}
+          <a class="related-card" href="{{ url_for('blog.post_detail', slug=item.slug) }}">
+            <span class="related-title">{{ item.title }}</span>
+            <span class="muted">{{ item.reading_time }} min read</span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="comments" id="comments">
+    <h2 class="section-title">Comments{% if comments %} ({{ comments|length }}){% endif %}</h2>
+
+    {% if allow_comments %}
+      {% if not comments %}
+        <p class="muted">No comments yet. Be the first to respond.</p>
+      {% endif %}
+      <ul class="comment-list">
+        {% for comment in comments %}
+          <li class="comment" id="comment-{{ comment.id }}">
+            <div class="comment-head">
+              <span class="comment-author">{{ comment.author_name }}</span>
+              <time datetime="{{ comment.created_at }}">{{ comment.created_at[:10] }}</time>
+            </div>
+            <div class="comment-body">{{ comment.body|comment_text|safe }}</div>
+            {% if comment.children %}
+              <ul class="comment-children">
+                {% for child in comment.children %}
+                  <li class="comment" id="comment-{{ child.id }}">
+                    <div class="comment-head">
+                      <span class="comment-author">{{ child.author_name }}</span>
+                      <time datetime="{{ child.created_at }}">{{ child.created_at[:10] }}</time>
+                    </div>
+                    <div class="comment-body">{{ child.body|comment_text|safe }}</div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+
+      <form class="comment-form" method="post" action="{{ url_for('blog.add_comment', slug=post.slug) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="parent_id" value="">
+        <div class="field-row">
+          <div class="field">
+            <label for="author_name">Name</label>
+            <input id="author_name" name="author_name" type="text" required maxlength="60" autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="author_email">Email <span class="muted">(not published)</span></label>
+            <input id="author_email" name="author_email" type="email" required maxlength="120" autocomplete="email">
+          </div>
+        </div>
+        <div class="field">
+          <label for="body">Comment</label>
+          <textarea id="body" name="body" rows="5" required maxlength="4000"></textarea>
+        </div>
+        <div class="hp-field" aria-hidden="true">
+          <label for="website">Website</label>
+          <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <button class="btn" type="submit">Post comment</button>
+        <p class="muted small">Comments are moderated and may take a moment to appear.</p>
+      </form>
+    {% else %}
+      <p class="muted">Comments are closed for this post.</p>
+    {% endif %}
+  </section>
+</article>
+{% endblock %}

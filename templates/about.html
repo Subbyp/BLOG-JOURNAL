@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="page">
+  <header class="page-header">
+    <h1>About</h1>
+    <p class="muted">{{ site.site_tagline }}</p>
+  </header>
+
+  <div class="prose narrow">
+    {{ site.site_description|markdown }}
+  </div>
+
+  <div class="about-stats">
+    <div class="stat">
+      <span class="stat-value">{{ comment_count }}</span>
+      <span class="stat-label">Comments</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ nav_tags|length }}</span>
+      <span class="stat-label">Topics</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">RSS</span>
+      <span class="stat-label"><a href="{{ url_for('feeds.rss') }}">Subscribe</a></span>
+    </div>
+  </div>
+</article>
+{% endblock %}

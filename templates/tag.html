@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-header">
+  <p class="eyebrow">Tag</p>
+  <h1>{{ tag.name }}</h1>
+  <p class="muted">{{ pagination.total }} post{{ '' if pagination.total == 1 else 's' }}</p>
+</header>
+
+<section class="post-list" aria-label="Posts tagged {{ tag.name }}">
+  {% for post in posts %}
+    {% include "partials/post_card.html" %}
+  {% else %}
+    <p class="muted">No posts with this tag yet.</p>
+  {% endfor %}
+</section>
+
+{% include "partials/pagination.html" %}
+{% endblock %}

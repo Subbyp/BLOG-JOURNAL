@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% set active_admin = 'users' %}
+{% block admin_content %}
+<section class="panel">
+  <header class="panel-head"><h2>Add user</h2></header>
+  <form class="inline-form" method="post" action="{{ url_for('admin.user_create') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="new_username">Username</label>
+      <input id="new_username" name="username" type="text" required maxlength="60">
+    </div>
+    <div class="field">
+      <label for="new_email">Email</label>
+      <input id="new_email" name="email" type="email" maxlength="120">
+    </div>
+    <div class="field">
+      <label for="new_password">Password</label>
+      <input id="new_password" name="password" type="password" required minlength="8">
+    </div>
+    <label class="checkbox">
+      <input type="checkbox" name="is_admin" value="1" checked>
+      <span>Administrator</span>
+    </label>
+    <button class="btn" type="submit">Create user</button>
+  </form>
+</section>
+
+<table class="admin-table">
+  <thead>
+    <tr><th>Username</th><th>Email</th><th>Role</th><th>Created</th><th class="actions-col">Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td class="strong">{{ user.username }}{% if user.id == g.user.id %} <span class="badge">you</span>{% endif %}</td>
+        <td class="muted">{{ user.email or '—' }}</td>
+        <td>{{ 'Admin' if user.is_admin else 'Author' }}</td>
+        <td class="muted small">{{ user.created_at[:10] }}</td>
+        <td class="actions-col">
+          <div class="row-actions">
+            <form method="post" action="{{ url_for('admin.user_password', user_id=user.id) }}" class="pw-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input name="password" type="password" placeholder="New password" minlength="8" required>
+              <button class="link" type="submit">Reset</button>
+            </form>
+            {% if user.id != g.user.id %}
+              <form method="post" action="{{ url_for('admin.user_delete', user_id=user.id) }}"
+                    data-confirm="Delete this user?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="link danger" type="submit">Delete</button>
+              </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

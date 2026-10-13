@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page_title %}{{ page_title }} · {% endif %}{{ site.site_title }}</title>
+<meta name="description" content="{{ page_description or site.site_description }}">
+<meta name="author" content="{{ site.site_author or site.site_title }}">
+<link rel="canonical" href="{{ canonical or (site_url or '') }}{{ request.path }}">
+<meta property="og:site_name" content="{{ site.site_title }}">
+<meta property="og:title" content="{% if page_title %}{{ page_title }}{% else %}{{ site.site_title }}{% endif %}">
+<meta property="og:description" content="{{ page_description or site.site_description }}">
+<meta property="og:type" content="{{ og_type or 'website' }}">
+<meta property="og:url" content="{{ request.url }}">
+{% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="{{ site.site_title }} feed" href="{{ url_for('feeds.rss') }}">
+<link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block head %}{% endblock %}
+<script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="{{ url_for('blog.index') }}">
+      <span class="brand-mark" aria-hidden="true">{{ site.site_title[:1]|upper }}</span>
+      <span class="brand-name">{{ site.site_title }}</span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-nav-toggle>
+      <span class="sr-only">Toggle navigation</span>
+      <span aria-hidden="true"></span>
+    </button>
+
+    <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+      <ul>
+        <li><a href="{{ url_for('blog.index') }}" {% if active == 'home' %}aria-current="page"{% endif %}>Home</a></li>
+        <li><a href="{{ url_for('blog.tag_index') }}" {% if active == 'tags' %}aria-current="page"{% endif %}>Tags</a></li>
+        <li><a href="{{ url_for('blog.archive_index') }}" {% if active == 'archive' %}aria-current="page"{% endif %}>Archive</a></li>
+        <li><a href="{{ url_for('blog.about') }}" {% if active == 'about' %}aria-current="page"{% endif %}>About</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <form class="search-mini" action="{{ url_for('blog.search') }}" method="get" role="search">
+        <label class="sr-only" for="site-search">Search</label>
+        <input id="site-search" type="search" name="q" placeholder="Search…" value="{{ term or '' }}" autocomplete="off">
+      </form>
+      <button class="icon-btn" type="button" data-theme-toggle aria-pressed="false">
+        <span class="sr-only">Toggle dark mode</span>
+        <span class="theme-icon" aria-hidden="true"></span>
+      </button>
+      {% if g.user %}
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      {% else %}
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.login') }}">Sign in</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="wrap flash-stack" role="status" aria-live="polite">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main id="main" class="{% block main_class %}wrap{% endblock %}">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <p class="footer-brand">{{ site.site_title }}</p>
+      <p class="muted">{{ site.site_tagline }}</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="footer-links">
+        <li><a href="{{ url_for('feeds.rss') }}">RSS</a></li>
+        <li><a href="{{ url_for('feeds.sitemap') }}">Sitemap</a></li>
+        <li><a href="{{ url_for('blog.tag_index') }}">Tags</a></li>
+        <li><a href="{{ url_for('blog.archive_index') }}">Archive</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="wrap footer-legal">
+    <span>© {{ now().year }} {{ site.site_author or site.site_title }}.</span>
+    {% if site.footer_text %}<span>{{ site.footer_text }}</span>{% endif %}
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/site.js') }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+{% set active_admin = 'dashboard' %}
+{% block admin_content %}
+<section class="stat-grid">
+  <div class="stat-card"><span class="stat-value">{{ stats.published_posts }}</span><span class="stat-label">Published</span></div>
+  <div class="stat-card"><span class="stat-value">{{ stats.draft_posts }}</span><span class="stat-label">Drafts</span></div>
+  <div class="stat-card"><span class="stat-value">{{ stats.pending_comments }}</span><span class="stat-label">Pending comments</span></div>
+  <div class="stat-card"><span class="stat-value">{{ stats.total_views }}</span><span class="stat-label">Total views</span></div>
+  <div class="stat-card"><span class="stat-value">{{ stats.total_tags }}</span><span class="stat-label">Tags</span></div>
+  <div class="stat-card"><span class="stat-value">{{ stats.total_media }}</span><span class="stat-label">Media</span></div>
+</section>
+
+<div class="admin-columns">
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Recent posts</h2>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.new_post') }}">New post</a>
+    </header>
+    <ul class="simple-list">
+      {% for post in recent_posts %}
+        <li>
+          <a href="{{ url_for('admin.edit_post', post_id=post.id) }}">{{ post.title }}</a>
+          <span class="badge badge-{{ post.status }}">{{ post.status }}</span>
+        </li>
+      {% else %}
+        <li class="muted">No posts yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Pending comments</h2>
+      {% if g.user and g.user.is_admin %}
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.comments', status='pending') }}">Review all</a>
+      {% endif %}
+    </header>
+    <ul class="simple-list">
+      {% for comment in pending %}
+        <li>
+          <strong>{{ comment.author_name }}</strong>
+          <span class="muted">on {{ comment.post_title }}</span>
+          <p class="clamp">{{ comment.body }}</p>
+        </li>
+      {% else %}
+        <li class="muted">Nothing waiting. Nice.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head"><h2>Most read</h2></header>
+    <ul class="simple-list">
+      {% for post in top %}
+        <li>
+          <a href="{{ url_for('blog.post_detail', slug=post.slug) }}">{{ post.title }}</a>
+          <span class="muted">{{ post.view_count }} views</span>
+        </li>
+      {% else %}
+        <li class="muted">No data yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head"><h2>Last 7 days</h2></header>
+    <p class="big-number">{{ recent_comments }}</p>
+    <p class="muted">comments received</p>
+  </section>
+</div>
+{% endblock %}
