@@ -10,8 +10,17 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+.venv-*/
 venv/
 env/
+
+# Virtual environments created directly in the project root
+/bin/
+/include/
+/lib/
+/lib64/
+/share/
+/pyvenv.cfg
 
 # Editors and OS noise
 .vscode/
